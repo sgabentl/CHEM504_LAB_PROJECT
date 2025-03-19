@@ -25,24 +25,39 @@ class PositionHandler:
 class PositionMove:         
      RED_POSITION1 = [1.7446362972259521, -1.4385647040656586, 2.3446999231921595, -0.7653154295733948, 1.5420920848846436, 3.153193950653076]
      RED_POSITION2 = [1.730034589767456, -1.0733220440200348, 2.283058468495504, -1.201580212717392, 1.542656660079956, 3.153193950653076]
-     GREEN_POSITION1 = [1.7312546968460083, -1.5535075229457398, 2.10514480272402, -0.543575720196106, 1.5416635274887085, 3.156507968902588]
-     #GREEN_POSITION2 = [0.8765246868133545, -1.9948517284789027, 2.2924073378192347, -0.24166639268908696, 0.8740379810333252, 3.1760315895080566]
-     #GREEN_POSITION3 = [0.9921266436576843, -1.5882045231261195, 2.5257766882525843, -0.9407172960093995, 1.0111021995544434, 3.141201972961426]
-     GREEN_POSITION2 = [1.174616813659668, -2.16580929378652, 2.3327489534961146, -0.15603549898181157, 1.1721503734588623, 3.1608855724334717]
-     GREEN_POSITION3 = [1.1731359958648682, -1.8137570820250453, 2.6901567617999476, -0.8645797532847901, 1.1737935543060303, 3.1583807468414307]
+     GREEN_POSITION1 = [1.7241122722625732, -1.6038876972594203, 2.0562947432147425, -0.45576222360644536, 1.5195368528366089, 3.1572272777557373]
+     GREEN_POSITION2 = [1.1704504489898682, -2.112025877038473, 2.47654635110964, -0.3685503763011475, 1.168399691581726, 3.1618423461914062]
+     GREEN_POSITION3 = [1.169089436531067, -1.8085299930968226, 2.695914093648092, -0.8905757826617737, 1.1692121028900146, 3.1597652435302734]
+     #GREEN_POSITION2 = [1.174616813659668, -2.16580929378652, 2.3327489534961146, -0.15603549898181157, 1.1721503734588623, 3.1608855724334717]
+     #GREEN_POSITION3 = [1.1731359958648682, -1.8137570820250453, 2.6901567617999476, -0.8645797532847901, 1.1737935543060303, 3.1583807468414307]
+     RED_POSITION3 = [1.7239357233047485, -1.5127788682333012, 2.154865090047018, -0.6454361242106934, 1.5201416015625, 3.1564512252807617]
+     RED_POSITION4 = [1.7227802276611328, -1.0755092662623902, 2.2902348677264612, -1.2178798180869599, 1.5208289623260498, 3.153461456298828]
      
      def __init__(self):
           self.gripper = Gripper()
           self.gripper.connect()
+          
+     def robot_conn(self):
+          self.robot = URControl(ip="192.168.0.2", port=30003)
+          self.positionHandler = PositionHandler(self.robot)
 
      def move_to_stirrer(self):
-          robot = URControl(ip="192.168.0.2", port=30003)
-          positionHandler = PositionHandler(robot)
-          positionHandler.move_to_position(self.RED_POSITION1)
-          positionHandler.move_to_position(self.RED_POSITION2)
+          self.positionHandler.move_to_position(self.RED_POSITION3)
+          self.positionHandler.move_to_position(self.RED_POSITION4)
           self.gripper.close_grip()
-          positionHandler.move_to_position(self.GREEN_POSITION1)
-          positionHandler.move_to_position(self.GREEN_POSITION2)
-          positionHandler.move_to_position(self.GREEN_POSITION3)
+          self.positionHandler.move_to_position(self.RED_POSITION3)
+          self.positionHandler.move_to_position(self.GREEN_POSITION1)
+          self.positionHandler.move_to_position(self.GREEN_POSITION2)
+          self.positionHandler.move_to_position(self.GREEN_POSITION3)
           self.gripper.open_grip()
-          positionHandler.move_to_position(self.GREEN_POSITION2)
+          self.positionHandler.move_to_position(self.GREEN_POSITION2)
+          
+     def remove_from_stirrer(self):
+          self.positionHandler.move_to_position(self.GREEN_POSITION3)
+          self.gripper.close_grip()
+          self.positionHandler.move_to_position(self.GREEN_POSITION2)
+          self.positionHandler.move_to_position(self.GREEN_POSITION1)
+          self.positionHandler.move_to_position(self.RED_POSITION3)
+          self.positionHandler.move_to_position(self.RED_POSITION4)
+          self.gripper.open_grip()
+          self.positionHandler.move_to_position(self.RED_POSITION1)
