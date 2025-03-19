@@ -1,0 +1,116 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+import pandas as pd
+import datetime
+
+class ColourDetection:
+    # Define the lower and upper HSV ranges for red color detection
+    LOWER_RED_1 = np.array([0, 150, 50])      # Lower range for red (0°)
+    UPPER_RED_1 = np.array([10, 255, 255])    # Upper range for red (10°)
+    
+    LOWER_RED_2 = np.array([170, 150, 50])    # Lower range for red (170°)
+    UPPER_RED_2 = np.array([180, 255, 255])   # Upper range for red (180°)
+    
+    ROI_SIZE = 100  # 100x100 pixels
+
+    def __init__(self):
+        self.cap = cv2.VideoCapture(0)
+        self.time_list = []
+        self.red_ratio_list = []
+
+    def get_timestamp(self):
+        return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    def compute_weighted_red_ratio(self, hsv):
+        # Create masks for detecting red in both ranges
+        mask1 = cv2.inRange(hsv, self.LOWER_RED_1, self.UPPER_RED_1)
+        mask2 = cv2.inRange(hsv, self.LOWER_RED_2, self.UPPER_RED_2)
+        
+        # Combine the two masks
+        mask = cv2.bitwise_or(mask1, mask2)
+        
+        # Get H, S, V values
+        H, S, V = cv2.split(hsv)
+        
+        # The values mainly changed are S and V
+        S_red = S[mask > 0]  
+        V_red = V[mask > 0]  
+        
+        if len(S_red) == 0:  
+            return 0
+
+        # Calculate the weighted red ratio
+        red_ratio = np.sum(S_red * V_red) / (np.sum(S) * np.sum(V))  
+        return red_ratio
+
+    def capture(self):
+        start_time = time.time()
+
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Failed to capture frame")
+                break
+
+            h, w, _ = frame.shape
+            x_center, y_center = w // 2, h // 2
+            x1, y1 = x_center - self.ROI_SIZE // 2, y_center - self.ROI_SIZE // 2
+            x2, y2 = x_center + self.ROI_SIZE // 2, y_center + self.ROI_SIZE // 2
+
+            roi = frame[y1:y2, x1:x2]
+            hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+            # calculate the weighted blue ratio
+            weighted_red_ratio = self.compute_weighted_red_ratio(hsv)
+
+            elapsed_time = time.time() - start_time
+            self.time_list.append(elapsed_time)
+            self.red_ratio_list.append(weighted_red_ratio)
+
+            colour_status = "Red (Oxidized)" if weighted_red_ratio > 0 else "Transitioning"
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(frame, f"Status: {colour_status}", (20, 50),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+            cv2.imshow("Color Detection", frame)
+            cv2.imshow("ROI", roi)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            elif elapsed_time > 30:
+                break
+
+        self.cap.release()
+        cv2.destroyAllWindows()
+        self.save_to_csv()
+
+    def save_to_csv(self):
+        timestamp = self.get_timestamp()
+        file_path = f"colour_detection_values/color_detection_{timestamp}.csv"
+
+        data = {
+            "Time (s)": self.time_list,
+            "Weighted Red Ratio": self.red_ratio_list
+        }
+        df = pd.DataFrame(data)
+        df.to_csv(file_path, index=False)
+
+        print(f"Data saved to {file_path}")
+
+    def plot_graph(self):
+        timestamp = self.get_timestamp()
+        image_path = f"colour_detection_graph/Figure_{timestamp}.png"
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(self.time_list, self.red_ratio_list, label="Weighted Red Ratio", color="red")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Weighted Red Ratio")
+        plt.title("Colour Change Over Time")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(image_path)
+        plt.show()
+
+        print(f"Graph saved to {image_path}")
