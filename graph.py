@@ -1,71 +1,86 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+import datetime
 
-# Initialize the video capture (0 for the default camera)
-cap = cv2.VideoCapture(0)
+class Graph:
+    ROI_SIZE = 100  # 100x100 pixels
 
-# Check if the camera is opened correctly
-if not cap.isOpened():
-    print("Error: Could not open video stream.")
-    exit()
+    def __init__(self):
+        self.cap = cv2.VideoCapture(0)
+        self.time_list = []
+        self.rgb_dict = {"red": [], "green": [], "blue": [], "time": []}
+        
+    def create_graph(self):
+        """Creates an rgb graph"""
+        self.time = self.rgb_dict["time"]
+        self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        plt.plot(self.time, self.rgb_dict["red"], color="red", label="Red")
+        plt.plot(self.time, self.rgb_dict["green"], color="green", label="Green")
+        plt.plot(self.time, self.rgb_dict["blue"], color="blue", label="Blue")
+        plt.xlabel("Time")
+        plt.ylabel("Intensity (a.u.)")
+        plt.title("Intensity vs Time")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f"graph_{self.timestamp}")
+        plt.show()
 
-# Create a figure for plotting (to keep it updated in real-time)
-plt.ion()  # Turn on interactive mode
-fig, ax = plt.subplots(figsize=(10, 6))
+    def get_rgb(self):
+        """Uses camera to get rgb values"""
+        start_time = time.time()
+            # Loop to capture frames from the video stream
+        while True:
+            # Read a frame from the camera
+            ret, frame = self.cap.read()
 
-# Set up initial empty bars
-bars = ax.bar(['Red', 'Green', 'Blue'], [0, 0, 0], color=['red', 'green', 'blue'])
+            # Exit if the frame was not captured properly
+            if not ret:
+                print("Failed to capture frame")
+                break
+            
+            h, w, _ = frame.shape
+            x_center, y_center = w // 2, h // 2
+            x1, y1 = x_center - self.ROI_SIZE // 2, y_center - self.ROI_SIZE // 2
+            x2, y2 = x_center + self.ROI_SIZE // 2, y_center + self.ROI_SIZE // 2
 
-# Set plot labels and title
-ax.set_title('Average RGB Intensity from Video Stream')
-ax.set_xlabel('Color Channel')
-ax.set_ylabel('Average Intensity (0 to 255)')
-ax.grid(True)
+            self.roi = frame[y1:y2, x1:x2]
 
-# Loop to capture frames from the video stream
-while True:
-    # Read a frame from the camera
-    ret, frame = cap.read()
+            # Convert the frame from BGR to RGB (OpenCV uses BGR by default)
+            roi_rgb = cv2.cvtColor(self.roi, cv2.COLOR_BGR2RGB)
+            
+            self.pixel_red = 0
+            self.pixel_green = 0
+            self.pixel_blue = 0
+            count = 0
+            for row in roi_rgb:
+                for pixel in row:
+                    self.pixel_red += float(pixel[0])
+                    self.pixel_green += float(pixel[1])
+                    self.pixel_blue += float(pixel[2])
+                    count += 1
+                    
+            red = self.pixel_red / count
+            green = self.pixel_green / count
+            blue = self.pixel_blue / count
+                    
+            self.rgb_dict["red"].append(red)
+            self.rgb_dict["green"].append(green)
+            self.rgb_dict["blue"].append(blue)
+            elapsed_time = time.time() - start_time
+            self.rgb_dict["time"].append(elapsed_time)
+            
+            cv2.imshow("Color Detection", frame)
+            cv2.imshow("ROI", self.roi)
+            
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            elif elapsed_time > 30:
+                break
 
-    # Exit if the frame was not captured properly
-    if not ret:
-        print("Failed to capture frame")
-        break
+        self.cap.release()
+        cv2.destroyAllWindows()
+        
+        self.create_graph()
 
-    # Convert the frame from BGR to RGB (OpenCV uses BGR by default)
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Extract the RGB components
-    red = frame_rgb[:, :, 0]  # Red channel
-    green = frame_rgb[:, :, 1]  # Green channel
-    blue = frame_rgb[:, :, 2]  # Blue channel
-
-    # Compute the average intensity for each channel
-    avg_red = np.mean(red)
-    avg_green = np.mean(green)
-    avg_blue = np.mean(blue)
-
-    # Update the bar heights with the new intensity values
-    bars[0].set_height(avg_red)
-    bars[1].set_height(avg_green)
-    bars[2].set_height(avg_blue)
-
-    # Draw the updated plot
-    plt.draw()
-    plt.pause(0.1)  # Pause to update the plot
-
-    # Show the video feed in a window (optional)
-    cv2.imshow('Video Feed', frame)
-
-    # Exit the loop if the 'q' key is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Release the video capture and close all OpenCV windows
-cap.release()
-cv2.destroyAllWindows()
-
-# Close the plot when the loop ends
-plt.ioff()  # Turn off interactive mode
-plt.show()
