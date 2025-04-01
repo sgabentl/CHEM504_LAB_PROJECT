@@ -3,14 +3,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import datetime
+import pandas as pd
 
 class Graph:
-    ROI_SIZE = 100  # 100x100 pixels
+    ROI_SIZE = 50  # 100x100 pixels
 
     def __init__(self):
         self.cap = cv2.VideoCapture(0)
         self.time_list = []
         self.rgb_dict = {"red": [], "green": [], "blue": [], "time": []}
+        
+    def save_to_csv(self):
+        file_path = f"rgb_csv/rgb_{self.timestamp}.csv"
+
+        df = pd.DataFrame(self.rgb_dict)
+        df.to_csv(file_path, index=False)
+
+        print(f"Data saved to {file_path}")
         
     def create_graph(self):
         """Creates an rgb graph"""
@@ -19,13 +28,15 @@ class Graph:
         plt.plot(self.time, self.rgb_dict["red"], color="red", label="Red")
         plt.plot(self.time, self.rgb_dict["green"], color="green", label="Green")
         plt.plot(self.time, self.rgb_dict["blue"], color="blue", label="Blue")
-        plt.xlabel("Time")
+        plt.xlabel("Time (s)")
         plt.ylabel("Intensity (a.u.)")
         plt.title("Intensity vs Time")
         plt.legend()
         plt.grid(True)
-        plt.savefig(f"graph_{self.timestamp}")
-        plt.show()
+        plt.show(block=False)
+        plt.savefig(f"graphs/graph_{self.timestamp}")
+        plt.close()
+        self.save_to_csv()
 
     def get_rgb(self):
         """Uses camera to get rgb values"""
@@ -83,4 +94,3 @@ class Graph:
         cv2.destroyAllWindows()
         
         self.create_graph()
-
