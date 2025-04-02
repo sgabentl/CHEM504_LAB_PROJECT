@@ -7,6 +7,9 @@ import pandas as pd
 
 class Graph:
     ROI_SIZE = 50  # 100x100 pixels
+    image0 = False
+    image30 = False
+    image60 = False
 
     def __init__(self):
         self.cap = cv2.VideoCapture(0)
@@ -24,7 +27,6 @@ class Graph:
     def create_graph(self):
         """Creates an rgb graph"""
         self.time = self.rgb_dict["time"]
-        self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         plt.plot(self.time, self.rgb_dict["red"], color="red", label="Red")
         plt.plot(self.time, self.rgb_dict["green"], color="green", label="Green")
         plt.plot(self.time, self.rgb_dict["blue"], color="blue", label="Blue")
@@ -41,6 +43,7 @@ class Graph:
     def get_rgb(self):
         """Uses camera to get rgb values"""
         start_time = time.time()
+        self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             # Loop to capture frames from the video stream
         while True:
             # Read a frame from the camera
@@ -80,17 +83,32 @@ class Graph:
             self.rgb_dict["green"].append(green)
             self.rgb_dict["blue"].append(blue)
             elapsed_time = time.time() - start_time
+
             self.rgb_dict["time"].append(elapsed_time)
             
             cv2.imshow("Color Detection", frame)
             cv2.imshow("ROI", self.roi)
             
+            if elapsed_time > 0 and self.image0 == False:
+                image_filename = f"images/image_0_{self.timestamp}.jpg"
+                cv2.imwrite(image_filename, frame)
+                self.image0 = True
+            if elapsed_time >= 30 and self.image30 == False:
+                image_filename = f"images/image_30_{self.timestamp}.jpg"
+                cv2.imwrite(image_filename, frame)
+                self.image30 = True
+            if elapsed_time >= 59 and self.image60 == False:
+                image_filename = f"images/image_60_{self.timestamp}.jpg"
+                cv2.imwrite(image_filename, frame)
+                self.image60 = True
+            
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            elif elapsed_time > 30:
+            elif elapsed_time > 60:
                 break
 
         self.cap.release()
         cv2.destroyAllWindows()
         
         self.create_graph()
+    
