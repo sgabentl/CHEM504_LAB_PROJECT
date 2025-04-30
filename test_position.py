@@ -1,4 +1,4 @@
-from PIL import ImageTk, Image
+rom PIL import ImageTk, Image
 import numpy as np
 import math
 import os
@@ -26,7 +26,7 @@ class PositionMove:
      # Automated stirrer might be a different height      
      STIRRER_1 = [1.7241122722625732, -1.6038876972594203, 2.0562947432147425, -0.45576222360644536, 1.5195368528366089, 3.1572272777557373]
      STIRRER_2 = [1.1704504489898682, -2.112025877038473, 2.47654635110964, -0.3685503763011475, 1.168399691581726, 3.1618423461914062]
-     STIRRER_3 = [1.169089436531067, -1.8085299930968226, 2.695914093648092, -0.8905757826617737, 1.1692121028900146, 3.1597652435302734]
+     STIRRER_3 = [1.3892946243286133, -1.7557207546629847, 2.6462441126452845, -0.8961229485324402, 1.5123252868652344, 3.1740987300872803]
      STIRRER_4 = [1.3753674030303955, -2.014369627038473, 2.465492550526754, -0.4437050384334107, 1.511202335357666, 3.1767196655273438]
      STIRRER_5 = [1.3743326663970947, -1.7633243999876917, 2.636611525212423, -0.8658105891994019, 1.5119651556015015, 3.1751298904418945]
      
@@ -37,11 +37,13 @@ class PositionMove:
      
      UNLOAD_1 = [1.1704657077789307, -2.1179315052428187, 2.4668949286090296, -0.35293133676562505, 1.168339729309082, 3.1618471145629883]
      UNLOAD_2 = [0.7566418647766113, -1.636881013909811, 2.2505953947650355, -0.6343515676311036, 0.9606629610061646, 3.1384644508361816]
-     UNLOAD_3 = [0.7554967999458313, -1.2361930173686524, 2.4058011213885706, -1.1882760983756562, 0.9613173007965088, 3.1351099014282227]
-     UNLOAD_4 = [0.7551684379577637, -1.1130998891643067, 2.4130519072162073, -1.3181210321239014, 0.9611937999725342, 3.1341538429260254]
+     UNLOAD_3 = [0.7563267946243286, -1.198175625210144, 2.3707788626300257, -1.1675941211036225, 0.93638014793396, 3.193721055984497]
+     UNLOAD_4 = [0.7561423778533936, -1.1301647585681458, 2.375160519276754, -1.2396552425673981, 0.9363149404525757, 3.193178653717041]
      UNLOAD_5 = [0.8142712116241455, -1.6682263813414515, 2.2509000937091272, -0.5373445314219971, 0.9473036527633667, 3.1304078102111816]
-     UNLOAD_6 = [0.813372790813446, -1.3423428249410172, 2.407254759465353, -1.0180101555636902, 0.9482195377349854, 3.1276650428771973]
-     UNLOAD_7 = [0.8128491640090942, -1.1640876692584534, 2.428725067769186, -1.2169773441604157, 0.9481956958770752, 3.1262495517730713]
+     UNLOAD_6 = [0.7395564913749695, -1.1977575582316895, 2.3652361075030726, -1.1398378175548096, 0.707876443862915, 3.1396257877349854]
+     UNLOAD_7 = [0.735879123210907, -1.1449441474727173, 2.376641098652975, -1.198312447672226, 0.7111202478408813, 3.1390891075134277]
+     UNLOAD_8 = [0.6722993850708008, -1.16387893379245, 2.3358357588397425, -1.1675237280181427, 0.6980118751525879, 3.1551716327667236]
+     UNLOAD_9 = [0.6721469759941101, -1.113744245176651, 2.3386758009540003, -1.2200635236552735, 0.6980034112930298, 3.1547133922576904]
      
      
      def __init__(self):
@@ -53,6 +55,7 @@ class PositionMove:
           self.positionHandler = PositionHandler(self.robot)
 
      def load_sample_1(self):
+          self.positionHandler.move_to_position(self.STIRRER_2)
           self.positionHandler.move_to_position(self.LOAD_1)
           self.positionHandler.move_to_position(self.LOAD_2)
           self.gripper.close_grip()
@@ -68,8 +71,8 @@ class PositionMove:
           self.gripper.close_grip()
           self.positionHandler.move_to_position(self.UNLOAD_1)
           self.positionHandler.move_to_position(self.UNLOAD_2)
-          self.positionHandler.move_to_position(self.UNLOAD_3)
-          self.positionHandler.move_to_position(self.UNLOAD_4)
+          self.positionHandler.move_to_position(self.UNLOAD_8)
+          self.positionHandler.move_to_position(self.UNLOAD_9)
           self.gripper.open_grip()
           self.positionHandler.move_to_position(self.UNLOAD_2)
 
@@ -80,8 +83,8 @@ class PositionMove:
           self.positionHandler.move_to_position(self.LOAD_3)
           self.gripper.close_grip()
           self.positionHandler.move_to_position(self.LOAD_4)
-          self.positionHandler.move_to_position(self.STIRRER_4)
-          self.positionHandler.move_to_position(self.STIRRER_5)
+          self.positionHandler.move_to_position(self.STIRRER_2)
+          self.positionHandler.move_to_position(self.STIRRER_3)
           self.gripper.open_grip()
           self.positionHandler.move_to_position(self.STIRRER_2)
           
@@ -94,3 +97,5 @@ class PositionMove:
           self.positionHandler.move_to_position(self.UNLOAD_7)
           self.gripper.open_grip_60()
           self.positionHandler.move_to_position(self.UNLOAD_5)
+          self.positionHandler.move_to_position(self.STIRRER_2)
+
