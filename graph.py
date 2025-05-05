@@ -95,7 +95,8 @@ class Graph:
             
             cv2.imshow("Color Detection", frame)
             cv2.imshow("ROI", self.roi)
-            
+
+            # Save images at selected time intervals
             if elapsed_time > 0 and self.image0 == False:
                 image_filename = f"images/image_0_{self.timestamp}.jpg"
                 cv2.imwrite(image_filename, frame)
