@@ -86,6 +86,11 @@ class Graph:
 
             self.rgb_dict["time"].append(elapsed_time)
             
+            colour_status = "Blue (Oxidized)" if weighted_blue_ratio > 0 else "Transitioning"
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(frame, f"Status: {colour_status}", (20, 50),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
             cv2.imshow("Color Detection", frame)
             cv2.imshow("ROI", self.roi)
             
