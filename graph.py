@@ -88,6 +88,7 @@ class Graph:
 
             # Create window with colour status and ROI
             colour_status = "Blue (Oxidized)" if self.rgb_dict["red"] < 50 else "Transitioning"
+            colour_status = "Red" if self.rgb["blue"] < 50 else "Transitioning"
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(frame, f"Status: {colour_status}", (20, 50),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
