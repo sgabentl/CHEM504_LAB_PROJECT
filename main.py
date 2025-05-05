@@ -9,7 +9,6 @@ def run_program():
     arm.robot_conn()
     arm.load_sample_1()
 
-    # Add a sleep for the graph destroy window
     graph1 = Graph()
     graph1.get_rgb()
 
