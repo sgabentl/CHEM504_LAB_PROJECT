@@ -87,9 +87,9 @@ class Graph:
             self.rgb_dict["time"].append(elapsed_time)
 
             # Create window with colour status and ROI
-            if self.rgb_dict["red"] < 50:
+            if red < 50:
                 colour_status = "Blue"
-            elif self.rgb_dict["blue"] < 50:
+            elif blue < 50:
                 colour_status = "Red"
             else:
                 colour_status = "Transitioning
